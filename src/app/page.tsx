@@ -1,7 +1,6 @@
 "use client";
 import Map from "react-map-gl/maplibre"
 import "maplibre-gl/dist/maplibre-gl.css"
-import { Card } from "@/components/ui/card";
 
 export default function Home() {
 
