@@ -30,6 +30,13 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - Example CRUD operations
 - Form validation
 
+
+## TODO 
+[] add map
+[] add the geomap
+[] add the interaction 
+[] set the database
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
