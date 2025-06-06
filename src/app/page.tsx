@@ -1,6 +1,7 @@
 "use client";
 import Map from "react-map-gl/maplibre"
 import "maplibre-gl/dist/maplibre-gl.css"
+import { Card } from "@/components/ui/card";
 
 export default function Home() {
 
@@ -14,7 +15,7 @@ export default function Home() {
           zoom: 6.7
         }}
         style={{ width: '100%', height: '100%' }}
-        mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+        mapStyle="https://api.maptiler.com/tiles/01974031-856e-7ff4-91f0-bef2ea41db98/tiles.json?key=4Wmdgxfv8qSnvY9vIERL"
       />
 
     </main>
