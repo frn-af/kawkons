@@ -172,28 +172,8 @@ export default function InteractiveMap() {
         />
       </Map>
 
-      {/* Custom tooltip positioned absolutely */}
       <MapTooltip hoverInfo={hoverInfo} />
 
-      {/* Optional: Reset View Button */}
-      <button
-        onClick={resetToInitialView}
-        disabled={isAnimating}
-        className={`
-          absolute bottom-4 right-4 z-10
-          bg-white hover:bg-gray-50 active:bg-gray-100
-          text-gray-700 font-medium text-sm
-          px-4 py-2 rounded-lg shadow-lg
-          border border-gray-200
-          transition-all duration-200 ease-in-out
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-          disabled:opacity-50 disabled:cursor-not-allowed
-          ${isAnimating ? 'pointer-events-none' : ''}
-        `}
-        aria-label="Reset map view to initial position"
-      >
-        Reset View
-      </button>
     </main>
   );
 }
