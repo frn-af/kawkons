@@ -1,21 +1,48 @@
 "use client";
-import Map from "react-map-gl/maplibre"
+import Map, { MapLayerMouseEvent, MapRef, StyleSpecification } from "react-map-gl/maplibre"
 import "maplibre-gl/dist/maplibre-gl.css"
-import { Card } from "@/components/ui/card";
+import { useEffect, useRef } from "react";
+import * as turf from '@turf/turf'
+import MAP_STYLE from '../lib/map-style'
 
 export default function Home() {
+  const mapRef = useRef<MapRef>(null);
 
+  const onClick = (event: MapLayerMouseEvent) => {
+    const map = mapRef.current?.getMap();
+    const features = map?.queryRenderedFeatures([event.point.x, event.point.y], {
+      layers: ['kawkons-fill']
+    });
+
+    if (event.features && event.features.length > 0) {
+      const feature = event.features[0]
+      const [minLng, minLat, maxLng, maxLat] = turf.bbox(feature)
+
+      mapRef.current?.fitBounds(
+        [
+          [minLng, minLat],
+          [maxLng, maxLat]
+        ],
+        {
+          padding: 40, duration: 1000
+        }
+      )
+    }
+  }
 
   return (
     <main className="relative" style={{ width: "100vw", height: "100vh" }}>
       <Map
+        ref={mapRef}
         initialViewState={{
           longitude: 132.852959,
-          latitude: -2.2846023,
-          zoom: 6.7
+          latitude: -2.0846023,
+          zoom: 6.8
         }}
         style={{ width: '100%', height: '100%' }}
-        mapStyle="https://api.maptiler.com/tiles/01974031-856e-7ff4-91f0-bef2ea41db98/tiles.json?key=4Wmdgxfv8qSnvY9vIERL"
+        mapStyle={MAP_STYLE as StyleSpecification}
+        interactiveLayerIds={["kawkons-fill"]}
+        onClick={onClick}
       />
 
     </main>
