@@ -1,18 +1,14 @@
 "use client";
 import Map, { MapLayerMouseEvent, MapRef, StyleSpecification } from "react-map-gl/maplibre"
 import "maplibre-gl/dist/maplibre-gl.css"
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import * as turf from '@turf/turf'
-import MAP_STYLE from '../lib/map-style'
+import mapStyle from '../lib/map-style'
 
 export default function Home() {
   const mapRef = useRef<MapRef>(null);
 
   const onClick = (event: MapLayerMouseEvent) => {
-    const map = mapRef.current?.getMap();
-    const features = map?.queryRenderedFeatures([event.point.x, event.point.y], {
-      layers: ['kawkons-fill']
-    });
 
     if (event.features && event.features.length > 0) {
       const feature = event.features[0]
@@ -40,7 +36,7 @@ export default function Home() {
           zoom: 6.8
         }}
         style={{ width: '100%', height: '100%' }}
-        mapStyle={MAP_STYLE as StyleSpecification}
+        mapStyle={mapStyle as StyleSpecification}
         interactiveLayerIds={["kawkons-fill"]}
         onClick={onClick}
       />

@@ -27,7 +27,7 @@ const lineLayer: LineLayerSpecification = {
   }
 }
 
-export default {
+const mapStyle = {
   ...MAP_STYLE,
   sources: {
     ...MAP_STYLE.sources,
@@ -35,3 +35,5 @@ export default {
   },
   layers: [...MAP_STYLE.layers, fillLayer, lineLayer]
 }
+
+export default mapStyle;
