@@ -14,6 +14,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useCallback, useRef, useState, useMemo } from "react";
 import * as turf from '@turf/turf';
 import mapStyle from '../lib/map-style';
+import { HoverInfo, MapTooltip } from '@/components/map-tooltips';
 
 // Constants
 const INITIAL_VIEW_STATE = {
@@ -27,19 +28,18 @@ const ANIMATION_CONFIG = {
   padding: 40
 } as const;
 
-const INTERACTIVE_LAYER_IDS = ["kawkons-fill"] as const;
-
+// Types
 interface MapBounds {
   sw: [number, number];
   ne: [number, number];
 }
-
 /**
- * Interactive map component with polygon click-to-zoom and reset functionality
+ * Interactive map component with polygon click-to-zoom, reset functionality, and tooltips
  */
 export default function InteractiveMap() {
   // State
   const [cursor, setCursor] = useState<string>("grab");
+  const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
 
   // Refs
@@ -57,6 +57,7 @@ export default function InteractiveMap() {
 
   const handleMouseLeave = useCallback(() => {
     setCursor('grab');
+    setHoverInfo(null);
   }, []);
 
   const handleViewStateChange = useCallback((evt: ViewStateChangeEvent) => {
@@ -108,12 +109,34 @@ export default function InteractiveMap() {
     const hasFeatures = event.features && event.features.length > 0;
 
     if (hasFeatures) {
-      const feature = event.features[0];
+      const feature = event.features![0];
       fitToFeatureBounds(feature);
     } else {
       resetToInitialView();
     }
   }, [fitToFeatureBounds, resetToInitialView]);
+
+  /**
+   * Handles hover events to show tooltip
+   */
+  const handleHover = useCallback((event: MapLayerMouseEvent) => {
+    const {
+      features,
+      point: { x, y }
+    } = event;
+
+    const hoveredFeature = features && features[0];
+
+    if (hoveredFeature) {
+      setHoverInfo({
+        feature: hoveredFeature,
+        x,
+        y
+      });
+    } else {
+      setHoverInfo(null);
+    }
+  }, []);
 
   return (
     <main className="relative w-screen h-screen">
@@ -122,12 +145,13 @@ export default function InteractiveMap() {
         initialViewState={INITIAL_VIEW_STATE}
         style={{ width: '100%', height: '100%' }}
         mapStyle={mapStyleMemo}
-        interactiveLayerIds={INTERACTIVE_LAYER_IDS}
+        interactiveLayerIds={['kawkons-fill']}
         cursor={cursor}
         onClick={handleMapClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onMove={handleViewStateChange}
+        onMouseMove={handleHover}
         attributionControl={false}
         cooperativeGestures={false}
       >
@@ -147,6 +171,29 @@ export default function InteractiveMap() {
           unit="metric"
         />
       </Map>
+
+      {/* Custom tooltip positioned absolutely */}
+      <MapTooltip hoverInfo={hoverInfo} />
+
+      {/* Optional: Reset View Button */}
+      <button
+        onClick={resetToInitialView}
+        disabled={isAnimating}
+        className={`
+          absolute bottom-4 right-4 z-10
+          bg-white hover:bg-gray-50 active:bg-gray-100
+          text-gray-700 font-medium text-sm
+          px-4 py-2 rounded-lg shadow-lg
+          border border-gray-200
+          transition-all duration-200 ease-in-out
+          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+          disabled:opacity-50 disabled:cursor-not-allowed
+          ${isAnimating ? 'pointer-events-none' : ''}
+        `}
+        aria-label="Reset map view to initial position"
+      >
+        Reset View
+      </button>
     </main>
   );
 }
