@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Menu } from "@/components/navigation-menu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,14 +28,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
+          <div className="absolute w-full flex justify-center items-center h-10 mt-2">
+            <Menu />
+          </div>
           {children}
         </ThemeProvider>
         <Toaster />

@@ -12,10 +12,6 @@ interface MapTooltipProps {
   hoverInfo: HoverInfo | null;
 }
 
-/**
- * Custom tooltip component for map features
- * Displays feature properties in a floating tooltip positioned at cursor location
- */
 export const MapTooltip: React.FC<MapTooltipProps> = ({ hoverInfo }) => {
   if (!hoverInfo) return null;
 
@@ -31,33 +27,33 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ hoverInfo }) => {
         transform: 'translate(0, -100%)'
       }}
     >
-      <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg px-3 py-2 max-w-xs">
+      <div className="bg-background backdrop-blur-sm border rounded-lg shadow-lg px-3 py-2 max-w-xs">
         <div className="space-y-0">
           {/* Display primary feature properties */}
           {properties.NKWS && (
-            <div className="font-semibold text-gray-900 text-sm">
+            <div className="font-semibold text-sm">
               {properties.NKWS}
             </div>
           )}
           {properties.Area && (
-            <div className="text-xs text-gray-600">
+            <div className="text-xs ">
               Area: {properties.Area}
             </div>
           )}
           {properties.area && (
-            <div className="text-xs text-gray-600">
+            <div className="text-xs ">
               Area: {properties.area}
             </div>
           )}
           {properties.population && (
-            <div className="text-xs text-gray-600">
+            <div className="text-xs ">
               Population: {properties.population.toLocaleString()}
             </div>
           )}
 
           {/* Fallback for when no specific properties are available */}
           {!properties.name && !properties.type && !properties.area && !properties.population && (
-            <div className="text-xs text-gray-600">
+            <div className="text-xs ">
               {Object.keys(properties).length > 0 ? (
                 <div>
                   {Object.entries(properties)
@@ -76,7 +72,7 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ hoverInfo }) => {
         </div>
 
         {/* Small arrow pointing to the feature */}
-        <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white/95"></div>
+        <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-background/95"></div>
       </div>
     </div>
   );
