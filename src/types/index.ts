@@ -88,6 +88,22 @@ export interface LandCover {
   tahunData?: number;
 }
 
+export interface EfektivitasData {
+  id: number;
+  kawasanId: number | null;
+  tahun: number;
+  skor: number;
+  keterangan: string | null;
+  createdAt: Date | null;
+  namaKawasan: string | null;
+  kategoriKawasan:
+    | "Cagar_Alam"
+    | "Suaka_Margasatwa"
+    | "Taman_Wisata_Alam"
+    | "KAS/KPA"
+    | null;
+}
+
 // Form props interface
 export interface FormProps {
   selectedKawasanId: string;

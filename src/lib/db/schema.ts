@@ -78,9 +78,10 @@ export const jenisSurveyEnum = pgEnum("jenis_survey", [
   "Socio_Economic",
 ]);
 export const nilaiEfektivitasEnum = pgEnum("nilai_efektivitas", [
-  "efektif",
-  "tidak_efektif",
   "belum_dilakukan",
+  "tidak_efektif",
+  "kurang_efektif",
+  "efektif",
 ]);
 
 // Tables
@@ -216,13 +217,14 @@ export const nilaiPenting = pgTable("nilai_penting", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const efevektivitsPengelolaan = pgTable("efektivitas_pengelolaan", {
+export const efektivitasPengelolaan = pgTable("efektivitas_pengelolaan", {
   id: serial("id").primaryKey(),
   kawasanId: integer("kawasan_id").references(() => kawasan.id, {
     onDelete: "cascade",
   }),
   tahun: integer("tahun").notNull(),
-  nilaiEfektivitas: nilaiEfektivitasEnum("nilai_efektivitas").notNull(),
+  skor: integer("skor").notNull().default(0), // 0-100 score
+  nilaiEfektivitas: nilaiEfektivitasEnum("nilai_efektivitas"), // calculated field, optional
   keterangan: text("keterangan"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -237,7 +239,7 @@ export const kawasanRelations = relations(kawasan, ({ many }) => ({
   openArea: many(openArea),
   keanekaragamanHayati: many(keanekaragamanHayati),
   nilaiPenting: many(nilaiPenting),
-  efevektivitsPengelolaan: many(efevektivitsPengelolaan),
+  efektivitasPengelolaan: many(efektivitasPengelolaan),
 }));
 
 export const skDocumentsRelations = relations(skDocuments, ({ one }) => ({
@@ -302,11 +304,11 @@ export const nilaiPentingRelations = relations(nilaiPenting, ({ one }) => ({
   }),
 }));
 
-export const efevektivitsPengelolaanRelations = relations(
-  efevektivitsPengelolaan,
+export const efektivitasPengelolaanRelations = relations(
+  efektivitasPengelolaan,
   ({ one }) => ({
     kawasan: one(kawasan, {
-      fields: [efevektivitsPengelolaan.kawasanId],
+      fields: [efektivitasPengelolaan.kawasanId],
       references: [kawasan.id],
     }),
   })
@@ -340,7 +342,6 @@ export type InsertKeanekaragamanHayati =
 export type NilaiPenting = typeof nilaiPenting.$inferSelect;
 export type InsertNilaiPenting = typeof nilaiPenting.$inferInsert;
 
-export type EfektivitasPengelolaan =
-  typeof efevektivitsPengelolaan.$inferSelect;
+export type EfektivitasPengelolaan = typeof efektivitasPengelolaan.$inferSelect;
 export type InsertEfektivitasPengelolaan =
-  typeof efevektivitsPengelolaan.$inferInsert;
+  typeof efektivitasPengelolaan.$inferInsert;
