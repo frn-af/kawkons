@@ -1,31 +1,32 @@
 "use client";
 
+import { HoverInfo, MapTooltip } from "@/components/map-tooltips";
+import SlidingPanel from "@/components/sliding-panel";
+import * as turf from "@turf/turf";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
-  Map,
   GeolocateControl,
+  Map,
   MapLayerMouseEvent,
   MapRef,
   NavigationControl,
   ScaleControl,
   StyleSpecification,
-  ViewStateChangeEvent
+  ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
-import "maplibre-gl/dist/maplibre-gl.css";
-import { useCallback, useRef, useState, useMemo } from "react";
-import * as turf from '@turf/turf';
-import mapStyle from '../lib/map-style';
-import { HoverInfo, MapTooltip } from '@/components/map-tooltips';
+import mapStyle from "../lib/map-style";
 
 // Constants
 const INITIAL_VIEW_STATE = {
   longitude: 132.852959,
   latitude: -2.0846023,
-  zoom: 6.8
+  zoom: 7,
 } as const;
 
 const ANIMATION_CONFIG = {
   duration: 1000,
-  padding: 40
+  padding: 60,
 } as const;
 
 // Types
@@ -33,54 +34,51 @@ interface MapBounds {
   sw: [number, number];
   ne: [number, number];
 }
-/**
- * Interactive map component with polygon click-to-zoom, reset functionality, and tooltips
- */
+
 export default function InteractiveMap() {
-  // State
   const [cursor, setCursor] = useState<string>("grab");
   const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
+  const [mouseFeature, setMouseFeature] = useState<GeoJSON.Feature | null>(
+    null
+  );
 
-  // Refs
   const mapRef = useRef<MapRef>(null);
 
-  // Memoized values
   const mapStyleMemo = useMemo(() => mapStyle as StyleSpecification, []);
 
-  // Event handlers
+  const handleOpenSheet = useCallback((feature: GeoJSON.Feature) => {
+    if (!feature) return;
+    setIsSheetOpen(true);
+    setMouseFeature(feature);
+  }, []);
+
   const handleMouseEnter = useCallback(() => {
     if (!isAnimating) {
-      setCursor('pointer');
+      setCursor("pointer");
     }
   }, [isAnimating]);
 
   const handleMouseLeave = useCallback(() => {
-    setCursor('grab');
+    setCursor("grab");
     setHoverInfo(null);
   }, []);
 
   const handleViewStateChange = useCallback((evt: ViewStateChangeEvent) => {
-    // Track animation state to prevent cursor changes during transitions
     setIsAnimating(evt.viewState.zoom !== INITIAL_VIEW_STATE.zoom);
   }, []);
 
-  /**
-   * Smoothly animates the map to the initial view state
-   */
   const resetToInitialView = useCallback(() => {
     if (!mapRef.current) return;
 
     mapRef.current.flyTo({
       center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
       zoom: INITIAL_VIEW_STATE.zoom,
-      duration: ANIMATION_CONFIG.duration
+      duration: ANIMATION_CONFIG.duration,
     });
   }, []);
 
-  /**
-   * Calculates and fits map bounds to a given feature
-   */
   const fitToFeatureBounds = useCallback((feature: GeoJSON.Feature) => {
     if (!mapRef.current || !feature.geometry) return;
 
@@ -90,39 +88,47 @@ export default function InteractiveMap() {
 
       const bounds: MapBounds = {
         sw: [minLng, minLat],
-        ne: [maxLng, maxLat]
+        ne: [maxLng, maxLat],
       };
 
       mapRef.current.fitBounds([bounds.sw, bounds.ne], {
-        padding: ANIMATION_CONFIG.padding,
-        duration: ANIMATION_CONFIG.duration
+        padding: {
+          top: ANIMATION_CONFIG.padding,
+          bottom: ANIMATION_CONFIG.padding,
+          right: 600,
+          left: 10,
+        },
+        duration: ANIMATION_CONFIG.duration,
       });
     } catch (error) {
-      console.error('Error calculating feature bounds:', error);
+      console.error("Error calculating feature bounds:", error);
     }
   }, []);
 
-  /**
-   * Handles map click events - zooms to polygon or resets view
-   */
-  const handleMapClick = useCallback((event: MapLayerMouseEvent) => {
-    const hasFeatures = event.features && event.features.length > 0;
+  const handleSheetClose = () => {
+    setIsSheetOpen(false);
+  };
 
-    if (hasFeatures) {
-      const feature = event.features![0];
-      fitToFeatureBounds(feature);
-    } else {
-      resetToInitialView();
-    }
-  }, [fitToFeatureBounds, resetToInitialView]);
+  const handleMapClick = useCallback(
+    (event: MapLayerMouseEvent) => {
+      const hasFeatures = event.features && event.features.length > 0;
 
-  /**
-   * Handles hover events to show tooltip
-   */
+      if (hasFeatures) {
+        const feature = event.features![0];
+        fitToFeatureBounds(feature);
+        handleOpenSheet(feature);
+      } else {
+        resetToInitialView();
+        setIsSheetOpen(false);
+      }
+    },
+    [fitToFeatureBounds, resetToInitialView, handleOpenSheet]
+  );
+
   const handleHover = useCallback((event: MapLayerMouseEvent) => {
     const {
       features,
-      point: { x, y }
+      point: { x, y },
     } = event;
 
     const hoveredFeature = features && features[0];
@@ -131,7 +137,7 @@ export default function InteractiveMap() {
       setHoverInfo({
         feature: hoveredFeature,
         x,
-        y
+        y,
       });
     } else {
       setHoverInfo(null);
@@ -140,12 +146,42 @@ export default function InteractiveMap() {
 
   return (
     <main className="relative w-screen h-screen">
+      <SlidingPanel isOpen={isSheetOpen} onClose={handleSheetClose}>
+        <div className="p-4">
+          {mouseFeature ? (
+            <>
+              <h2 className="text-lg font-semibold mb-4">
+                {mouseFeature.properties?.NKWS}
+              </h2>
+              <div>
+                <p>
+                  <strong>Feature ID:</strong> {mouseFeature.id}
+                </p>
+                <p>
+                  <strong>Properties:</strong>
+                </p>
+                <ul>
+                  {Object.entries(mouseFeature.properties || {}).map(
+                    ([key, value]) => (
+                      <li key={key}>
+                        {key}: {String(value)}
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            </>
+          ) : (
+            <p>No feature selected.</p>
+          )}
+        </div>
+      </SlidingPanel>
       <Map
         ref={mapRef}
         initialViewState={INITIAL_VIEW_STATE}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: "100%", height: "100%" }}
         mapStyle={mapStyleMemo}
-        interactiveLayerIds={['kawkons-fill']}
+        interactiveLayerIds={["kawkons-fill"]}
         cursor={cursor}
         onClick={handleMapClick}
         onMouseEnter={handleMouseEnter}
@@ -155,25 +191,19 @@ export default function InteractiveMap() {
         attributionControl={false}
         cooperativeGestures={false}
       >
+        <ScaleControl position="bottom-left" maxWidth={200} unit="metric" />
         <GeolocateControl
-          position="top-left"
+          position="bottom-left"
           trackUserLocation={false}
           showAccuracyCircle={false}
         />
         <NavigationControl
-          position="top-left"
+          position="bottom-left"
           showCompass={true}
           showZoom={true}
         />
-        <ScaleControl
-          position="bottom-left"
-          maxWidth={100}
-          unit="metric"
-        />
       </Map>
-
       <MapTooltip hoverInfo={hoverInfo} />
-
     </main>
   );
 }
