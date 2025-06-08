@@ -1,10 +1,10 @@
-"use client"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+"use client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-import { toast } from "@/hooks/use-toast"
-import { Button } from "@/components/ui/button"
+import { getImtByNohp, newData } from "@/actions/action";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -12,15 +12,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { getImtByNohp, newData } from "@/actions/action"
-import { Data } from "@/lib/db/schema"
-import { useState } from "react"
-
-type CrudProps = {
-  onSubmitAction: (data: Data) => void
-}
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const FormSchema = z.object({
   name: z.string().min(2, {
@@ -34,11 +29,11 @@ const FormSchema = z.object({
   }),
   berat_badan: z.coerce.number().min(1, {
     message: "Berat badan must be at least 1 characters.",
-  })
-})
+  }),
+});
 
-export function CreateForm({ onSubmitAction }: CrudProps) {
-  const [loading, setLoading] = useState(false)
+export function CreateForm() {
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -46,43 +41,42 @@ export function CreateForm({ onSubmitAction }: CrudProps) {
       name: "",
       no_hp: undefined,
       tinggi_badan: undefined,
-      berat_badan: undefined
+      berat_badan: undefined,
     },
-  })
+  });
 
   const formSubmit = async (data: z.infer<typeof FormSchema>) => {
-    setLoading(true)
+    setLoading(true);
 
-    const checkNoHP = await getImtByNohp(data.no_hp)
+    const checkNoHP = await getImtByNohp(data.no_hp);
     if (checkNoHP.length > 0) {
       toast({
         title: "No HP already exist",
         description: "Please use another No HP",
         variant: "destructive",
-      })
-      setLoading(false)
-      return
+      });
+      setLoading(false);
+      return;
     }
 
-    const addData = await newData(data)
+    const addData = await newData(data);
     if (addData instanceof Error || !addData) {
       toast({
         title: "Failed submitted data",
         description: "Please try again later",
         variant: "destructive",
-      })
-      setLoading(false)
-      return
+      });
+      setLoading(false);
+      return;
     }
     toast({
       title: "Data submitted successfully",
       description: "Thank you for submitting your data",
       variant: "default",
-    })
-    onSubmitAction(addData[0]!)
-    setLoading(false)
-    form.reset()
-  }
+    });
+    setLoading(false);
+    form.reset();
+  };
 
   return (
     <Form {...form}>
@@ -114,8 +108,8 @@ export function CreateForm({ onSubmitAction }: CrudProps) {
                   required
                   value={field.value || ""}
                   onChange={(e) => {
-                    const value = e.target.value
-                    field.onChange(value.replace(/\D/g, ""))
+                    const value = e.target.value;
+                    field.onChange(value.replace(/\D/g, ""));
                   }}
                 />
               </FormControl>
@@ -137,8 +131,8 @@ export function CreateForm({ onSubmitAction }: CrudProps) {
                   required
                   value={field.value || ""}
                   onChange={(e) => {
-                    const value = e.target.value
-                    field.onChange(value.replace(/\D/g, ""))
+                    const value = e.target.value;
+                    field.onChange(value.replace(/\D/g, ""));
                   }}
                 />
               </FormControl>
@@ -160,8 +154,8 @@ export function CreateForm({ onSubmitAction }: CrudProps) {
                   required
                   value={field.value || ""}
                   onChange={(e) => {
-                    const value = e.target.value
-                    field.onChange(value.replace(/\D/g, ""))
+                    const value = e.target.value;
+                    field.onChange(value.replace(/\D/g, ""));
                   }}
                 />
               </FormControl>
@@ -170,13 +164,9 @@ export function CreateForm({ onSubmitAction }: CrudProps) {
           )}
         />
         <Button type="submit" disabled={loading} className="w-full">
-          {loading ? (
-            "Loading..."
-          ) : (
-            "Hitung"
-          )}
+          {loading ? "Loading..." : "Hitung"}
         </Button>
       </form>
     </Form>
-  )
+  );
 }

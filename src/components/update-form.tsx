@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { toast } from "@/hooks/use-toast";
+import { updateData } from "@/actions/action";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,10 +13,18 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { toast } from "@/hooks/use-toast";
 import { Data } from "@/lib/db/schema";
-import { updateData } from "@/actions/action";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
 
 type EditProps = {
   oldData: Data;
@@ -25,7 +33,9 @@ type EditProps = {
 
 const FormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  no_hp: z.string().min(10, { message: "No HP must be at least 10 characters." }),
+  no_hp: z
+    .string()
+    .min(10, { message: "No HP must be at least 10 characters." }),
   tinggi_badan: z.coerce.number().min(1, { message: "Height must be valid." }),
   berat_badan: z.coerce.number().min(1, { message: "Weight must be valid." }),
 });
