@@ -7,7 +7,6 @@ import { TrendAnalysis } from "@/components/trend-analysis";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { getAllKawasan } from "@/lib/actions/kawasan";
 import {
   getAllEfektivitas,
@@ -20,17 +19,11 @@ import {
   getEfektivitasCategoryColor,
   getEfektivitasCategoryDisplay,
 } from "@/utils/efektivitas";
-import {
-  AlertCircle,
-  BarChart3,
-  Calendar,
-  CheckCircle,
-  Filter,
-  MapPin,
-  XCircle,
-} from "lucide-react";
+import { BarChart3, Calendar, CheckCircle, Filter, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createEfektivitasColumns, transformToPivotData } from "./columns";
+import { DataTable } from "./data-table";
 
 interface Statistics {
   totalKawasan: number;
@@ -40,49 +33,7 @@ interface Statistics {
   totalAssessments: number;
 }
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "excellent":
-      return "bg-green-100 text-green-800 border-green-300";
-    case "good":
-      return "bg-blue-100 text-blue-800 border-blue-300";
-    case "moderate":
-      return "bg-yellow-100 text-yellow-800 border-yellow-300";
-    case "poor":
-      return "bg-red-100 text-red-800 border-red-300";
-    default:
-      return "bg-gray-100 text-gray-800 border-gray-300";
-  }
-};
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case "excellent":
-    case "good":
-      return <CheckCircle className="h-4 w-4" />;
-    case "moderate":
-      return <AlertCircle className="h-4 w-4" />;
-    case "poor":
-      return <XCircle className="h-4 w-4" />;
-    default:
-      return <AlertCircle className="h-4 w-4" />;
-  }
-};
-
-const getThreatColor = (level: string) => {
-  switch (level) {
-    case "high":
-      return "bg-red-100 text-red-800 border-red-300";
-    case "medium":
-      return "bg-yellow-100 text-yellow-800 border-yellow-300";
-    case "low":
-      return "bg-green-100 text-green-800 border-green-300";
-    default:
-      return "bg-gray-100 text-gray-800 border-gray-300";
-  }
-};
-
-export default function EfektifitasPage() {
+export default function EfektivitasPage() {
   const [efektivitasData, setEfektivitasData] = useState<EfektivitasData[]>([]);
   const [kawasanList, setKawasanList] = useState<Kawasan[]>([]);
   const [statistics, setStatistics] = useState<Statistics | null>(null);
@@ -95,7 +46,6 @@ export default function EfektifitasPage() {
   useEffect(() => {
     loadData();
   }, []);
-
   async function loadData() {
     setIsLoading(true);
     try {
@@ -105,25 +55,36 @@ export default function EfektifitasPage() {
         getEfektivitasStatistics(),
       ]);
 
-      setEfektivitasData(efektivitas);
-      setKawasanList(kawasan.data || []);
+      // Handle different response formats
+      const efektivitasArray = Array.isArray(efektivitas)
+        ? efektivitas
+        : (efektivitas as any)?.data || [];
+
+      const kawasanArray = Array.isArray(kawasan)
+        ? kawasan
+        : kawasan?.data || [];
+
+      setEfektivitasData(efektivitasArray);
+      setKawasanList(kawasanArray);
       setStatistics(stats);
     } catch (error) {
       console.error("Error loading data:", error);
+      setEfektivitasData([]);
+      setKawasanList([]);
+      setStatistics(null);
     } finally {
       setIsLoading(false);
     }
   }
-
-  // Filter data by selected year
-  const filteredData = efektivitasData.filter(
-    (item) => item.tahun === selectedYear
-  );
-
   // Get available years
   const availableYears = [
     ...new Set(efektivitasData.map((item) => item.tahun)),
   ].sort((a, b) => b - a);
+
+  // Filter data by selected year for year-specific statistics
+  const filteredData = efektivitasData.filter(
+    (item) => item.tahun === selectedYear
+  );
 
   // Calculate current year statistics
   const currentYearStats = filteredData.reduce((acc, item) => {
@@ -131,6 +92,14 @@ export default function EfektifitasPage() {
     acc[category] = (acc[category] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+  // Transform data to pivot format
+  const pivotData = transformToPivotData(efektivitasData, kawasanList);
+  // Create columns with available years
+  const columns = createEfektivitasColumns({
+    availableYears,
+    kawasanList,
+    onDataChange: loadData,
+  });
 
   if (isLoading) {
     return (
@@ -141,16 +110,17 @@ export default function EfektifitasPage() {
       </main>
     );
   }
+
   return (
     <main className="container mx-auto p-6 pt-20 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">
-            Efektifitas Pengelolaan Kawasan
+            Efektivitas Pengelolaan Kawasan
           </h1>
           <p className="text-muted-foreground mt-2">
-            Penilaian dan monitoring efektifitas pengelolaan kawasan konservasi
+            Penilaian dan monitoring efektivitas pengelolaan kawasan konservasi
           </p>
         </div>
         <div className="flex gap-2">
@@ -252,7 +222,7 @@ export default function EfektifitasPage() {
             </Button>
           ))}
         </div>
-      </div>{" "}
+      </div>
       {/* Effectiveness by Category */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {Object.entries(currentYearStats).map(([category, count]) => (
@@ -267,61 +237,21 @@ export default function EfektifitasPage() {
             </CardContent>
           </Card>
         ))}
-      </div>{" "}
+      </div>
       {/* Trend Analysis */}
-      {efektivitasData.length > 0 && <TrendAnalysis data={efektivitasData} />}
+      {efektivitasData.length > 0 && (
+        <TrendAnalysis data={efektivitasData} />
+      )}{" "}
       {/* Data Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
-            Data Efektivitas Tahun {selectedYear}
+            Data Efektivitas - Semua Tahun
           </CardTitle>
-        </CardHeader>
+        </CardHeader>{" "}
         <CardContent>
-          {filteredData.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Tidak ada data untuk tahun {selectedYear}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredData.map((item) => {
-                const category = calculateEfektivitasCategory(item.skor);
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50"
-                  >
-                    <div className="flex-1">
-                      <div className="font-medium">{item.namaKawasan}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {item.kategoriKawasan?.replace(/_/g, " ")}
-                      </div>
-                      {item.keterangan && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {item.keterangan}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <div className="text-2xl font-bold">{item.skor}</div>
-                        <div className="text-xs text-muted-foreground">
-                          Skor
-                        </div>
-                      </div>
-                      <Badge className={getEfektivitasCategoryColor(category)}>
-                        {getEfektivitasCategoryDisplay(category)}
-                      </Badge>
-                      <div className="w-32">
-                        <Progress value={item.skor} className="h-2" />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <DataTable columns={columns} data={pivotData} />
         </CardContent>
       </Card>
     </main>

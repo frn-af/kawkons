@@ -143,15 +143,18 @@ export async function getEfektivitasStatistics() {
       .select({
         skor: efektivitasPengelolaan.skor,
         tahun: efektivitasPengelolaan.tahun,
+        kawasanId: efektivitasPengelolaan.kawasanId,
         kategoriKawasan: kawasan.kategoriKawasan,
       })
       .from(efektivitasPengelolaan)
-      .leftJoin(kawasan, eq(efektivitasPengelolaan.kawasanId, kawasan.id));
+      .leftJoin(kawasan, eq(efektivitasPengelolaan.kawasanId, kawasan.id)); // Get total count of all kawasan from kawasan table
+    const totalKawasanResult = await db.select().from(kawasan);
+    const totalKawasan = totalKawasanResult.length;
 
-    // Calculate statistics
-    const totalKawasan = new Set(allData.map((d) => d.kategoriKawasan)).size;
     const averageScore =
-      allData.reduce((acc, curr) => acc + curr.skor, 0) / allData.length;
+      allData.length > 0
+        ? allData.reduce((acc, curr) => acc + curr.skor, 0) / allData.length
+        : 0;
 
     // Count by category
     const categoryCounts = allData.reduce((acc, curr) => {

@@ -74,7 +74,7 @@ export function Menu() {
                 <NavigationMenuLink asChild>
                   <a
                     className="flex h-full w-full select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                    href="/efektifitas"
+                    href="/efektivitas"
                   >
                     <div className="mb-2 mt-4 text-lg font-medium">
                       Efektifitas Pengelolaan Kawasan

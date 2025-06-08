@@ -7,12 +7,17 @@ export interface ApiResponse<T = any> {
 }
 
 export interface Kawasan {
-  id: string;
+  id: number;
   namaKawasan: string;
-  noRegistrasi: string;
-  kategoriKawasan: string;
-  letak: string;
-  // Add other properties as needed
+  noRegistrasi: string | null;
+  kategoriKawasan:
+    | "Cagar_Alam"
+    | "Suaka_Margasatwa"
+    | "Taman_Wisata_Alam"
+    | "KAS/KPA";
+  letak: string | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 }
 
 export interface SKDocument {
@@ -95,13 +100,23 @@ export interface EfektivitasData {
   skor: number;
   keterangan: string | null;
   createdAt: Date | null;
-  namaKawasan: string | null;
-  kategoriKawasan:
-    | "Cagar_Alam"
-    | "Suaka_Margasatwa"
-    | "Taman_Wisata_Alam"
-    | "KAS/KPA"
+  namaKawasan: string;
+  kategoriKawasan: string;
+}
+
+export interface EfektivitasAssessment {
+  id: number;
+  kawasanId: number | null;
+  tahun: number;
+  skor: number;
+  nilaiEfektivitas:
+    | "belum_dilakukan"
+    | "tidak_efektif"
+    | "kurang_efektif"
+    | "efektif"
     | null;
+  keterangan: string | null;
+  createdAt: Date | null;
 }
 
 // Form props interface
