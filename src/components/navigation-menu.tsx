@@ -1,9 +1,8 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
+import Link from "next/link";
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -12,26 +11,24 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu";
+import { cn } from "@/lib/utils";
 
 const components: { title: string; href: string; description: string }[] = [
   {
     title: "TL dan OA",
     href: "/docs/primitives/alert-dialog",
-    description:
-      "Tutupan lahan dan Open Area Kawasan Konservasi"
+    description: "Tutupan lahan dan Open Area Kawasan Konservasi",
   },
   {
     title: "Ekosistem",
     href: "/docs/primitives/hover-card",
-    description:
-      "Tipe Ekosistem Kawasan Konservasi"
+    description: "Tipe Ekosistem Kawasan Konservasi",
   },
   {
     title: "Keragaman Hayati",
     href: "/docs/primitives/progress",
-    description:
-      "Keragaman Hayati Pada Kawasan Konservasi",
+    description: "Keragaman Hayati Pada Kawasan Konservasi",
   },
   {
     title: "Biofisik",
@@ -41,16 +38,14 @@ const components: { title: string; href: string; description: string }[] = [
   {
     title: "Luas dan Pengukuhan",
     href: "/docs/primitives/tabs",
-    description:
-      "Luas dan Pengukuhan Kawasan Konservasi",
+    description: "Luas dan Pengukuhan Kawasan Konservasi",
   },
   {
     title: "Lainnya",
     href: "/docs/primitives/tooltip",
-    description:
-      "Temukan data selengkapnya disini",
+    description: "Temukan data selengkapnya disini",
   },
-]
+];
 
 export function Menu() {
   return (
@@ -79,7 +74,7 @@ export function Menu() {
                 <NavigationMenuLink asChild>
                   <a
                     className="flex h-full w-full select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                    href="/"
+                    href="/efektifitas"
                   >
                     <div className="mb-2 mt-4 text-lg font-medium">
                       Efektifitas Pengelolaan Kawasan
@@ -118,7 +113,7 @@ export function Menu() {
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
-  )
+  );
 }
 
 const ListItem = React.forwardRef<
@@ -143,6 +138,6 @@ const ListItem = React.forwardRef<
         </a>
       </NavigationMenuLink>
     </li>
-  )
-})
-ListItem.displayName = "ListItem"
+  );
+});
+ListItem.displayName = "ListItem";

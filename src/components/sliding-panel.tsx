@@ -16,7 +16,7 @@ export default function SlidingPanel({
 }: SlidingPanelProps) {
   return (
     <div
-      className={`fixed top-16 right-0 h-[calc(100%-128px)] rounded-lg w-1/3 bg-background shadow-lg z-50 transform transition-transform duration-300 ${
+      className={`fixed top-16 right-0 h-[calc(100vh-80px)] rounded-lg w-1/3 bg-background shadow-lg z-40 transform transition-transform duration-300 ${
         isOpen ? "translate-x-[-16px]" : "translate-x-full"
       }`}
     >
